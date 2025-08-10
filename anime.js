@@ -1,4 +1,4 @@
-class Anime{
+export class Anime{
     #api = "https://api.jikan.moe/v4";
 
     id;
@@ -47,6 +47,6 @@ class Anime{
 }
 
 (async () => {
-    let anime = await new Anime("kimitsu no yaiba", 1, 5).init();
-    console.log(anime);
+    // let anime = await new Anime("kimitsu no yaiba", 1, 5).init();
+    // console.log(anime);
 })();
