@@ -11,6 +11,13 @@ const fileRe = /\.(?=\w{1,4})/i;
 
 let season, episode;
 let fsP = fs.promises;
+
+let object = {
+    name: "Dekin no Mogura",
+    season: "" || "01",
+    episodes: ["[Witanime.com] DNM EP 01 FHD.mp4"],
+
+}
 // fs.readdir("./", (err, files)=>{
 //     files.forEach(file => {
 //         // if folder name not matched
@@ -70,20 +77,52 @@ function getEpisodeNumber(path){
     console.log(path);
 }
 
-async function getDirWithEp(){
-    let grandDir = await fsP.readdir("./");
-    let parentDir = grandDir.map(async file => {
-        if(fileRe.test(file)){
-            return;
+// async function getDirWithEp(){
+//     let grandDir = await fsP.readdir("./"); // read all directory
+//     let filesList = []
+//     await grandDir.map(async file => {
+//         if(fileRe.test(file)){ // check if it is a file or no
+//             return;
+//         }
+//         console.log(file, "false, this is a folder! scanning ...."); // if it is a folder scan it
+//         filesList.push([`${file}`, await fsP.readdir(`./${file}`)]); 
+//         // console.log(filesList);
+//         return filesList;
+//     });
+//     console.log(filesList)
+// }
+async function getDirectory() {
+    let currentDirectory = await fsP.readdir("./");
+    let directory = [];
+
+    async function getFolderContents(){
+        for (let folder of currentDirectory) {
+            if (fileRe.test(folder)) continue; // if it is a file not folder skip it
+            // console.log(file, "false, this is a folder! scanning ....");
+            let folderContents = await fsP.readdir(`./${folder}`); // get what inside folders
+            // for(let file of folderContents){
+            //     if(fileRe.test(file)) continue;
+            //     seasonContents = await fsP.readdir(`./${folder}/${file}`);
+            // }
+            directory.push([folder, folderContents]); // push folder name and it's array of contents
         }
-        console.log(file, "false, this is a folder! scanning ....");
-        parentDir = await fsP.readdir(`./${file}`);
-        console.log(parentDir);
-        return parent;
-    });
-    // console.log(parentDir);
+        return directory;
+    }
+   
+    async function getSeasonContents(directory){
+        Promise.all(await getFolderContents());
+        for(let folder of directory){
+            for (let file of folder[1]){
+                if (fileRe.test(file)) continue;
+                let seasonContents = await fsP.readdir(`./${folder[0]}/${file}`);
+                folder[1].push(seasonContents);
+            }
+        }
+        return directory
+    }
+   return getSeasonContents(directory);
 }
-getDirWithEp();
+console.log(await getDirectory());
 
 // function checkSeasonFolder(path){
 //     fs.readdirSync(path, (err, files) => {
